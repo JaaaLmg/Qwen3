@@ -1,1 +1,4 @@
 models/
+datasets/
+__pycache__/
+outputs/
