@@ -68,7 +68,7 @@ def dataset_jsonl_transfer(origin_path, new_path):
             # 解析每一行的json数据
             data = json.loads(line)
             input = data["question"]
-            output = f"<think>{data["think"]}</think> \n {data["answer"]}"
+            output = f"<think>{data['think']}</think> \n {data['answer']}"
             message = {
                 "instruction": PROMPT,
                 "input": f"{input}",
@@ -124,6 +124,7 @@ def process_func(example):
 
 def predict(messages, model, tokenizer):
     device = "cuda"
+    model.eval()
     text = tokenizer.apply_chat_template(
         messages,
         tokenize=False,
@@ -134,6 +135,7 @@ def predict(messages, model, tokenizer):
         model_inputs.input_ids,
         max_new_tokens=MAX_LENGTH,
     )
+    model.train()
     generated_ids = [
         output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
     ]
@@ -161,8 +163,10 @@ if not os.path.exists(test_jsonl_new_path):
 train_df = pd.read_json(train_jsonl_new_path, lines=True)
 train_ds = Dataset.from_pandas(train_df)
 print(train_ds.column_names)
+print(train_ds[0])
 train_dataset = train_ds.map(process_func, remove_columns=train_ds.column_names)
 print(train_dataset.column_names)
+print(train_dataset[0])
 
 # 得到验证集
 eval_df = pd.read_json(test_jsonl_new_path, lines=True)
